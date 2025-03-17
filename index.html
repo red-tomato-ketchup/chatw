@@ -5,61 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat-W</title>
     <style>
-        <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }
-    #chat {
-        width: 400px;
-        height: 500px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        overflow-y: scroll;
-        padding: 10px;
-        margin-bottom: 10px;
-        background-color: #f9f9f9;
-    }
-    #message {
-        width: 300px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        margin-right: 10px;
-    }
-    button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #0056b3;
-    }
-    .username-section {
-        margin-bottom: 20px;
-    }
-    .username-section input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        margin-right: 10px;
-    }
-    .message {
-        margin-bottom: 10px;
-    }
-    .message strong {
-        color: #007bff;
-    }
-</style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chat {
+            width: 400px;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        #message {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .username-section {
+            margin-bottom: 20px;
+        }
+        .username-section input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .message strong {
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
     <div class="username-section">
         <input type="text" id="username" placeholder="Enter your username">
-        <button onclick="setUsername()">Set A Username(even tho i know who u are)</button>
+        <button onclick="setUsername()">Set A Username (even tho I know who u are)</button>
     </div>
     <div id="chat"></div>
     <input type="text" id="message" placeholder="Type a message..." disabled>
@@ -67,9 +65,13 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
+        // Replace with your backend URL (e.g., https://your-backend.onrender.com)
+        const backendUrl = 'http://localhost:3000'; // Use this for local testing
+        const socket = io(backendUrl);
+
         let username = '';
 
+        // Set username
         function setUsername() {
             username = document.getElementById('username').value.trim();
             if (username) {
@@ -79,12 +81,23 @@
             }
         }
 
-        socket.on('message', (data) => {
+        // Receive message history
+        socket.on('messageHistory', (history) => {
             const chat = document.getElementById('chat');
-            chat.innerHTML += `<p><strong>${data.username}:</strong> ${data.message}</p>`;
+            history.forEach((data) => {
+                chat.innerHTML += `<p class="message"><strong>${data.username}:</strong> ${data.message}</p>`;
+            });
             chat.scrollTop = chat.scrollHeight; // Auto-scroll
         });
 
+        // Receive new messages
+        socket.on('message', (data) => {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<p class="message"><strong>${data.username}:</strong> ${data.message}</p>`;
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll
+        });
+
+        // Send messages
         function sendMessage() {
             const message = document.getElementById('message').value;
             if (message) {
@@ -92,6 +105,12 @@
                 document.getElementById('message').value = ''; // Clear input
             }
         }
+
+        // Handle connection errors
+        socket.on('connect_error', (err) => {
+            console.error('Connection error:', err);
+            alert('Failed to connect to the chat server. Please try again later.');
+        });
     </script>
 </body>
 </html>
