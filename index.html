@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat-W</title>
+    <style>
+        <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    #chat {
+        width: 400px;
+        height: 500px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        overflow-y: scroll;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+    #message {
+        width: 300px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    .username-section {
+        margin-bottom: 20px;
+    }
+    .username-section input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .message {
+        margin-bottom: 10px;
+    }
+    .message strong {
+        color: #007bff;
+    }
+</style>
+    </style>
+</head>
+<body>
+    <div class="username-section">
+        <input type="text" id="username" placeholder="Enter your username">
+        <button onclick="setUsername()">Set A Username(even tho i know who u are)</button>
+    </div>
+    <div id="chat"></div>
+    <input type="text" id="message" placeholder="Type a message..." disabled>
+    <button onclick="sendMessage()" disabled>Send</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let username = '';
+
+        function setUsername() {
+            username = document.getElementById('username').value.trim();
+            if (username) {
+                document.getElementById('message').disabled = false;
+                document.querySelector('button[onclick="sendMessage()"]').disabled = false;
+                document.querySelector('.username-section').style.display = 'none';
+            }
+        }
+
+        socket.on('message', (data) => {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<p><strong>${data.username}:</strong> ${data.message}</p>`;
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll
+        });
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message) {
+                socket.emit('message', { username, message });
+                document.getElementById('message').value = ''; // Clear input
+            }
+        }
+    </script>
+</body>
+</html>
