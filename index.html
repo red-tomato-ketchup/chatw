@@ -4,33 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat-W</title>
-    <style>
-        /* Added new styles */
-        .status-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        #online-users, #typing-status {
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 10px;
-            background-color: #f9f9f9;
-        }
-        .online-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background-color: #28a745;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        .typing-indicator {
-            color: #6c757d;
-            font-style: italic;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="status-container">
@@ -60,20 +34,16 @@
         const messageInput = document.getElementById('message');
         let typingTimeout;
 
-        // Set username and notify server
         function setUsername() {
             username = document.getElementById('username').value.trim();
             if (username) {
                 document.getElementById('message').disabled = false;
                 document.querySelector('button[onclick="sendMessage()"]').disabled = false;
                 document.querySelector('.username-section').style.display = 'none';
-                
-                // Notify server user is online
                 socket.emit('userOnline', username);
             }
         }
 
-        // Message handling
         function sendMessage() {
             const message = messageInput.value;
             if (message) {
@@ -82,7 +52,6 @@
             }
         }
 
-        // Typing indicators
         messageInput.addEventListener('input', () => {
             socket.emit('typing', username);
             clearTimeout(typingTimeout);
@@ -91,18 +60,26 @@
             }, 1000);
         });
 
-        // Socket event handlers
         socket.on('messageHistory', (history) => {
             const chat = document.getElementById('chat');
-            chat.innerHTML = history.map(data => 
-                `<p class="message"><strong>${data.username}:</strong> ${data.message}</p>`
-            ).join('');
+            chat.innerHTML = history.map(data => `
+                <div class="message">
+                    <strong>${data.username}</strong>
+                    ${data.message}
+                    <time>${new Date(data.timestamp).toLocaleTimeString()}</time>
+                </div>
+            `).join('');
             chat.scrollTop = chat.scrollHeight;
         });
 
         socket.on('message', (data) => {
             const chat = document.getElementById('chat');
-            chat.innerHTML += `<p class="message"><strong>${data.username}:</strong> ${data.message}</p>`;
+            chat.innerHTML += `
+                <div class="message">
+                    <strong>${data.username}</strong>
+                    ${data.message}
+                    <time>${new Date(data.timestamp).toLocaleTimeString()}</time>
+                </div>`;
             chat.scrollTop = chat.scrollHeight;
         });
 
@@ -124,14 +101,10 @@
             `).join('');
         });
 
-        // Handle disconnections
         window.addEventListener('beforeunload', () => {
-            if (username) {
-                socket.emit('userOffline', username);
-            }
+            if (username) socket.emit('userOffline', username);
         });
 
-        // Error handling
         socket.on('connect_error', (err) => {
             console.error('Connection error:', err);
             alert('Failed to connect to chat server. Please refresh!');
