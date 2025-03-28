@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat-W Pro</title>
+    <title>Chat-W</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,25 +13,6 @@
             --text-primary: #050505;
             --text-secondary: #65676b;
             --online: #31A24C;
-            --error: #ff4444;
-            --success: #00C851;
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --background: #121212;
-                --surface: #1e1e1e;
-                --text-primary: #ffffff;
-                --text-secondary: #aaaaaa;
-            }
-            .modal-content {
-                background: #2d2d2d;
-                color: white;
-            }
-            .message-input {
-                color: white;
-            }
         }
 
         * {
@@ -81,19 +62,13 @@
             height: 40px;
             border-radius: 50%;
             background: var(--surface);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            font-weight: bold;
-            text-transform: uppercase;
         }
 
         .online-dot {
             width: 12px;
             height: 12px;
             background: var(--online);
-            border: 2px solid var(--background);
+            border: 2px solid white;
             border-radius: 50%;
             position: absolute;
             bottom: 0;
@@ -116,54 +91,12 @@
             background: var(--surface);
             font-size: 15px;
             animation: messageSlide 0.25s ease-out;
-            position: relative;
         }
 
         .message.self {
             background: var(--primary);
             color: white;
             align-self: flex-end;
-        }
-
-        .message-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 4px;
-            font-size: 0.8em;
-            opacity: 0.8;
-        }
-
-        .message-status {
-            margin-left: 8px;
-        }
-
-        .message-actions {
-            position: absolute;
-            top: -10px;
-            right: 10px;
-            background: var(--surface);
-            border-radius: 15px;
-            padding: 4px;
-            display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .message:hover .message-actions {
-            display: flex;
-        }
-
-        .message.self:hover .message-actions {
-            background: var(--primary);
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: inherit;
-            padding: 4px;
-            cursor: pointer;
-            font-size: 14px;
         }
 
         @keyframes messageSlide {
@@ -191,7 +124,6 @@
             font-size: 15px;
             min-height: 48px;
             resize: none;
-            color: var(--text-primary);
         }
 
         .send-button {
@@ -204,12 +136,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-        }
-
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         .typing-container {
@@ -258,108 +184,19 @@
         }
 
         .modal-content {
-            background: var(--background);
+            background: white;
             padding: 24px;
             border-radius: 16px;
             text-align: center;
             max-width: 90%;
-            width: 400px;
-        }
-
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 16px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-        }
-
-        .modal-content button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .error-message {
-            color: var(--error);
-            margin-top: 8px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .upload-btn {
-            background: var(--surface);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .file-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 8px;
-            display: none;
-        }
-
-        .reaction-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 4px;
-        }
-
-        .reactions-container {
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        .reaction {
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
-            padding: 2px 6px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-        }
-
-        .connection-status {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: var(--error);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: none;
-            z-index: 1000;
-        }
-
-        .connection-status.connected {
-            background: var(--success);
         }
     </style>
 </head>
 <body>
-    <div class="connection-status" id="connection-status">Disconnected</div>
-    
     <div class="chat-container">
         <div class="chat-header">
             <div class="online-status">
-                <div class="avatar" id="user-avatar">?</div>
+                <div class="avatar"></div>
                 <div class="online-dot"></div>
             </div>
             <div class="chat-info">
@@ -378,14 +215,8 @@
         <div class="messages-container" id="chat"></div>
 
         <div class="input-container">
-            <button class="upload-btn" id="upload-btn" title="Attach file">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M19 13v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5M12 15V3m0 0L8 7m4-4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <input type="file" id="file-input" style="display: none;">
             <textarea id="message" class="message-input" placeholder="Type a message..." rows="1" disabled></textarea>
-            <button class="send-button" id="send-button" onclick="sendMessage()" disabled>
+            <button class="send-button" onclick="sendMessage()" disabled>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
                 </svg>
@@ -396,437 +227,137 @@
     <div class="username-modal" id="username-modal">
         <div class="modal-content">
             <h2>Choose Your Username</h2>
-            <input type="text" id="username" placeholder="Enter username" maxlength="20">
-            <div class="error-message" id="username-error"></div>
+            <input type="text" id="username" placeholder="Enter username">
             <button onclick="setUsername()">Continue</button>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        const socket = io('https://chatw-bu6y.onrender.com');
+        let username = '';
+        let typingTimeout;
+        
         // DOM Elements
         const messageInput = document.getElementById('message');
-        const sendButton = document.getElementById('send-button');
+        const sendButton = document.querySelector('.send-button');
         const usernameModal = document.getElementById('username-modal');
-        const usernameInput = document.getElementById('username');
-        const usernameError = document.getElementById('username-error');
-        const chatContainer = document.getElementById('chat');
-        const uploadBtn = document.getElementById('upload-btn');
-        const fileInput = document.getElementById('file-input');
-        const userAvatar = document.getElementById('user-avatar');
-        const connectionStatus = document.getElementById('connection-status');
+        const chatContainer = document.querySelector('.messages-container');
 
-        // Socket.io connection
-        const socket = io('https://chatw-bu6y.onrender.com', {
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000
-        });
-
-        // App state
-        let username = '';
-        let typingDebounce;
-        let messageIdCounter = 0;
-        let pendingMessages = {};
-        let onlineUsers = [];
-
-        // Initialize from localStorage
-        function initFromStorage() {
-            const savedUsername = localStorage.getItem('chat-username');
-            if (savedUsername) {
-                username = savedUsername;
-                checkUsernameAvailability(savedUsername);
-            } else {
-                usernameModal.style.display = 'flex';
-            }
-        }
-
-        // Username validation and setup
-        function validateUsername(username) {
-            if (!username || username.length < 3) {
-                showError("Username must be at least 3 characters");
-                return false;
-            }
-            if (username.length > 20) {
-                showError("Username must be less than 20 characters");
-                return false;
-            }
-            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                showError("Only letters, numbers and underscores allowed");
-                return false;
-            }
-            hideError();
-            return true;
-        }
-
-        function showError(message) {
-            usernameError.textContent = message;
-            usernameError.style.display = 'block';
-        }
-
-        function hideError() {
-            usernameError.style.display = 'none';
-        }
-
-        function checkUsernameAvailability(username) {
-            if (!validateUsername(username)) return;
-            
-            socket.emit('checkUsername', username, (isTaken) => {
-                if (isTaken) {
-                    showError("Username is already taken");
-                    localStorage.removeItem('chat-username');
-                } else {
-                    setUsername(username);
-                }
-            });
-        }
-
-        function setUsername(newUsername) {
-            username = newUsername;
-            localStorage.setItem('chat-username', username);
-            usernameModal.style.display = 'none';
-            messageInput.disabled = false;
-            sendButton.disabled = false;
-            
-            // Update avatar with first letter
-            userAvatar.textContent = username.charAt(0).toUpperCase();
-            
-            socket.emit('userOnline', username);
-        }
-
-        // Message handling
-        function sendMessage() {
-            const messageText = messageInput.value.trim();
-            if (!messageText || !username) return;
-
-            const messageId = 'msg-' + Date.now() + '-' + (messageIdCounter++);
-            const messageData = {
-                id: messageId,
-                username,
-                message: escapeHtml(messageText),
-                timestamp: new Date().toISOString(),
-                status: 'sending'
-            };
-
-            // Add to pending messages
-            pendingMessages[messageId] = messageData;
-            
-            // Render immediately for instant feedback
-            renderMessage(messageData);
-            
-            // Send to server
-            socket.emit('message', messageData, (ack) => {
-                if (ack && ack.success) {
-                    updateMessageStatus(messageId, 'sent');
-                } else {
-                    updateMessageStatus(messageId, 'failed');
-                }
-            });
-
-            messageInput.value = '';
+        // Mobile Input Handling
+        messageInput.addEventListener('input', () => {
             adjustInputHeight();
-        }
-
-        function renderMessage(message) {
-            const isSelf = message.username === username;
-            const time = formatTime(message.timestamp);
-            const statusIcon = getStatusIcon(message.status);
-            
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${isSelf ? 'self' : ''}`;
-            messageElement.dataset.id = message.id;
-            messageElement.innerHTML = `
-                ${!isSelf ? `<strong>${escapeHtml(message.username)}</strong><br>` : ''}
-                ${message.message}
-                <div class="message-meta">
-                    <span>${time}</span>
-                    ${isSelf ? `<span class="message-status">${statusIcon}</span>` : ''}
-                </div>
-                ${isSelf ? `
-                <div class="message-actions">
-                    <button class="action-btn" onclick="deleteMessage('${message.id}')">🗑️</button>
-                </div>
-                ` : ''}
-            `;
-            
-            chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function updateMessageStatus(messageId, status) {
-            const messageElement = document.querySelector(`[data-id="${messageId}"]`);
-            if (messageElement) {
-                const statusElement = messageElement.querySelector('.message-status');
-                if (statusElement) {
-                    statusElement.textContent = getStatusIcon(status);
-                }
-                
-                if (status === 'failed') {
-                    messageElement.style.opacity = '0.7';
-                } else {
-                    messageElement.style.opacity = '1';
-                }
-                
-                // Update in pending messages
-                if (pendingMessages[messageId]) {
-                    pendingMessages[messageId].status = status;
-                }
-            }
-        }
-
-        function getStatusIcon(status) {
-            switch (status) {
-                case 'sending': return '🔄';
-                case 'sent': return '✓';
-                case 'delivered': return '✓✓';
-                case 'read': return '✓✓✓';
-                case 'failed': return '❌';
-                default: return '';
-            }
-        }
-
-        function deleteMessage(messageId) {
-            const messageElement = document.querySelector(`[data-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.remove();
-                socket.emit('deleteMessage', messageId);
-                delete pendingMessages[messageId];
-            }
-        }
-
-        // File upload handling
-        uploadBtn.addEventListener('click', () => {
-            fileInput.click();
+            handleTyping();
         });
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                alert('File size too large (max 5MB)');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const fileData = {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    data: event.target.result
-                };
-                
-                const messageId = 'file-' + Date.now();
-                const messageData = {
-                    id: messageId,
-                    username,
-                    file: fileData,
-                    timestamp: new Date().toISOString(),
-                    status: 'sending'
-                };
-                
-                pendingMessages[messageId] = messageData;
-                renderFileMessage(messageData);
-                
-                socket.emit('fileMessage', messageData, (ack) => {
-                    if (ack && ack.success) {
-                        updateMessageStatus(messageId, 'sent');
-                    } else {
-                        updateMessageStatus(messageId, 'failed');
-                    }
-                });
-            };
-            
-            if (file.type.startsWith('image/')) {
-                reader.readAsDataURL(file);
-            } else {
-                reader.readAsText(file);
-            }
-            
-            fileInput.value = '';
-        });
-
-        function renderFileMessage(message) {
-            const isSelf = message.username === username;
-            const time = formatTime(message.timestamp);
-            const statusIcon = getStatusIcon(message.status);
-            
-            let content = '';
-            if (message.file.type.startsWith('image/')) {
-                content = `<img src="${message.file.data}" alt="${message.file.name}" class="file-preview" style="display: block;">`;
-            } else {
-                content = `📄 <a href="${message.file.data}" download="${message.file.name}">${message.file.name}</a> (${formatFileSize(message.file.size)})`;
-            }
-            
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${isSelf ? 'self' : ''}`;
-            messageElement.dataset.id = message.id;
-            messageElement.innerHTML = `
-                ${!isSelf ? `<strong>${escapeHtml(message.username)}</strong><br>` : ''}
-                ${content}
-                <div class="message-meta">
-                    <span>${time}</span>
-                    ${isSelf ? `<span class="message-status">${statusIcon}</span>` : ''}
-                </div>
-                ${isSelf ? `
-                <div class="message-actions">
-                    <button class="action-btn" onclick="deleteMessage('${message.id}')">🗑️</button>
-                </div>
-                ` : ''}
-            `;
-            
-            chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Typing indicators with debounce
-        function handleTyping() {
-            if (!username) return;
-            
-            clearTimeout(typingDebounce);
-            socket.emit('typing', username);
-            
-            typingDebounce = setTimeout(() => {
-                socket.emit('stopTyping', username);
-            }, 1000);
-        }
-
-        // UI helpers
         function adjustInputHeight() {
             messageInput.style.height = 'auto';
             messageInput.style.height = messageInput.scrollHeight + 'px';
         }
 
-        function formatTime(timestamp) {
-            return new Date(timestamp).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' bytes';
-            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            else return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // Socket.io event handlers
-        socket.on('connect', () => {
-            connectionStatus.textContent = 'Connected';
-            connectionStatus.className = 'connection-status connected';
-            connectionStatus.style.display = 'block';
-            setTimeout(() => {
-                connectionStatus.style.display = 'none';
-            }, 3000);
-            
+        // Username Setup
+        function setUsername() {
+            username = document.getElementById('username').value.trim();
             if (username) {
+                usernameModal.style.display = 'none';
+                messageInput.disabled = false;
+                sendButton.disabled = false;
                 socket.emit('userOnline', username);
             }
+        }
+
+        // Message Handling
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message && username) {
+                socket.emit('message', { 
+                    username, 
+                    message,
+                    timestamp: new Date().toISOString()
+                });
+                messageInput.value = '';
+                adjustInputHeight();
+            }
+        }
+
+        // Typing Indicators
+        function handleTyping() {
+            if (!username) return;
             
-            // Resend pending messages
-            Object.values(pendingMessages).forEach(msg => {
-                if (msg.status === 'failed') {
-                    msg.status = 'sending';
-                    updateMessageStatus(msg.id, 'sending');
-                    if (msg.file) {
-                        socket.emit('fileMessage', msg);
-                    } else {
-                        socket.emit('message', msg);
-                    }
-                }
-            });
-        });
+            clearTimeout(typingTimeout);
+            socket.emit('typing', username);
+            
+            typingTimeout = setTimeout(() => {
+                socket.emit('stopTyping', username);
+            }, 1000);
+        }
 
-        socket.on('disconnect', () => {
-            connectionStatus.textContent = 'Disconnected - attempting to reconnect...';
-            connectionStatus.className = 'connection-status';
-            connectionStatus.style.display = 'block';
-        });
-
+        // Socket Event Handlers
         socket.on('messageHistory', messages => {
-            chatContainer.innerHTML = '';
-            messages.forEach(msg => {
-                renderMessage(msg);
-            });
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            const chat = document.getElementById('chat');
+            chat.innerHTML = messages.map(msg => createMessageElement(msg)).join('');
+            chat.scrollTop = chat.scrollHeight;
         });
 
         socket.on('message', message => {
-            renderMessage(message);
-        });
-
-        socket.on('fileMessage', message => {
-            renderFileMessage(message);
-        });
-
-        socket.on('messageDeleted', messageId => {
-            const messageElement = document.querySelector(`[data-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.remove();
-            }
+            const chat = document.getElementById('chat');
+            chat.innerHTML += createMessageElement(message);
+            chat.scrollTop = chat.scrollHeight;
         });
 
         socket.on('updateOnlineUsers', users => {
-            onlineUsers = users;
-            // Could update online user list UI here
+            // Update online status UI if needed
         });
 
         socket.on('updateTypingUsers', typingUsers => {
             const typingIndicator = document.getElementById('typing-indicator');
-            const filteredUsers = typingUsers.filter(user => user !== username);
-            
-            if (filteredUsers.length > 0) {
+            if (typingUsers.length > 0) {
                 typingIndicator.style.display = 'flex';
                 document.getElementById('typing-text').textContent = 
-                    `${filteredUsers.join(', ')} ${filteredUsers.length > 1 ? 'are' : 'is'} typing...`;
+                    `${typingUsers.join(', ')} ${typingUsers.length > 1 ? 'are' : 'is'} typing...`;
             } else {
                 typingIndicator.style.display = 'none';
             }
         });
 
         socket.on('connect_error', (err) => {
-            connectionStatus.textContent = 'Connection error: ' + (err.message || 'Unknown error');
-            connectionStatus.className = 'connection-status';
-            connectionStatus.style.display = 'block';
+            alert('Connection error. Please check your internet connection.');
         });
 
-        // Event listeners
-        messageInput.addEventListener('input', () => {
-            adjustInputHeight();
-            handleTyping();
-        });
+        // Message Element Creation
+        function createMessageElement(msg) {
+            const isSelf = msg.username === username;
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            return `
+                <div class="message ${isSelf ? 'self' : ''}">
+                    ${!isSelf ? `<strong>${msg.username}</strong>` : ''}
+                    ${msg.message}
+                    <div style="font-size:0.8em; margin-top:4px; opacity:0.8">${time}</div>
+                </div>
+            `;
+        }
 
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // Initial Setup
+        window.onload = () => {
+            usernameModal.style.display = 'flex';
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        };
 
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                checkUsernameAvailability(usernameInput.value.trim());
-            }
-        });
-
+        // Handle window close
         window.addEventListener('beforeunload', () => {
             if (username) socket.emit('userOffline', username);
         });
-
-        // Initialize the app
-        initFromStorage();
     </script>
 </body>
 </html>
+
+observe this code
