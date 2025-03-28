@@ -13,6 +13,10 @@ const io = new Server(server, {
         origin: '*',
         methods: ['GET', 'POST'],
     },
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+        skipMiddlewares: true,
+    }
 });
 
 // MongoDB Connection
@@ -40,15 +44,13 @@ const messageSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
+    socketId: { type: String },
+    online: { type: Boolean, default: false },
     lastSeen: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
 const User = mongoose.model('User', userSchema);
-
-// In-memory state (for real-time features)
-const onlineUsers = new Map(); // username -> socketId
-const typingUsers = new Set();
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
@@ -60,7 +62,7 @@ app.get('/', (req, res) => {
 });
 
 // Socket.io Events
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
     console.log('New connection:', socket.id);
 
     // Load last 100 messages from DB
@@ -80,28 +82,54 @@ io.on('connection', (socket) => {
     socket.on('checkUsername', async (username, callback) => {
         try {
             const user = await User.findOne({ username });
-            callback(!!user);
+            if (user && user.online) {
+                // User is already online, force logout the previous session
+                if (user.socketId && io.sockets.sockets.get(user.socketId)) {
+                    io.to(user.socketId).emit('forceLogout', 'Logged in from another device');
+                }
+                callback({ available: false, message: 'User already online' });
+            } else {
+                callback({ available: true });
+            }
         } catch (err) {
             console.error('Username check error:', err);
-            callback(false);
+            callback({ available: false, message: 'Server error' });
         }
     });
 
     // User comes online
     socket.on('userOnline', async (username) => {
         try {
+            // Check if user is already online from another device
+            const existingUser = await User.findOne({ username, online: true });
+            
+            if (existingUser && existingUser.socketId !== socket.id) {
+                // Force logout the previous session
+                if (io.sockets.sockets.get(existingUser.socketId)) {
+                    io.to(existingUser.socketId).emit('forceLogout', 'Logged in from another device');
+                    io.sockets.sockets.get(existingUser.socketId)?.disconnect();
+                }
+            }
+
             // Create or update user
             await User.findOneAndUpdate(
                 { username },
-                { username, lastSeen: new Date() },
+                { 
+                    username, 
+                    socketId: socket.id,
+                    online: true, 
+                    lastSeen: new Date() 
+                },
                 { upsert: true, new: true }
             );
 
-            onlineUsers.set(username, socket.id);
             socket.username = username;
             
-            io.emit('updateOnlineUsers', Array.from(onlineUsers.keys()));
-            console.log(`${username} is online`);
+            // Get all online users
+            const onlineUsers = await User.find({ online: true });
+            io.emit('updateOnlineUsers', onlineUsers.map(user => user.username));
+            
+            console.log(`${username} is online (socket: ${socket.id})`);
         } catch (err) {
             console.error('Error setting user online:', err);
         }
@@ -216,17 +244,19 @@ io.on('connection', (socket) => {
     // Disconnection handling
     socket.on('disconnect', async () => {
         if (socket.username) {
-            onlineUsers.delete(socket.username);
-            typingUsers.delete(socket.username);
-            
             try {
                 await User.findOneAndUpdate(
                     { username: socket.username },
-                    { lastSeen: new Date() }
+                    { 
+                        online: false,
+                        lastSeen: new Date() 
+                    }
                 );
                 
-                io.emit('updateOnlineUsers', Array.from(onlineUsers.keys()));
-                io.emit('updateTypingUsers', Array.from(typingUsers));
+                // Get updated online users list
+                const onlineUsers = await User.find({ online: true });
+                io.emit('updateOnlineUsers', onlineUsers.map(user => user.username));
+                
                 console.log(`${socket.username} disconnected`);
             } catch (err) {
                 console.error('Error updating user last seen:', err);
